@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    command: ["--config=/etc/otel/otel-collector.yaml"]
+    volumes:
+      - ../otel/otel-collector.yaml:/etc/otel/otel-collector.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - tempo
+      - loki
+      - mimir
+    networks:
+      - observability
+
+  tempo:
+    image: grafana/tempo:2.4.1
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+    ports:
+      - "3200:3200"
+    networks:
+      - observability
+
+  loki:
+    image: grafana/loki:2.9.4
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    ports:
+      - "3100:3100"
+    networks:
+      - observability
+
+  mimir:
+    image: grafana/mimir:2.11.0
+    command:
+      - "-config.file=/etc/mimir.yaml"
+    volumes:
+      - ./mimir.yaml:/etc/mimir.yaml
+      - mimir-data:/data
+    ports:
+      - "9009:9009"
+    networks:
+      - observability
+
+  grafana:
+    image: grafana/grafana:10.3.1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../grafana/provisioning:/etc/grafana/provisioning
+      - ../grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    networks:
+      - observability
+
+networks:
+  observability:
+
+volumes:
+  mimir-data:

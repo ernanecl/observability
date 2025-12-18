@@ -1,0 +1,54 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  resource:
+    attributes:
+      - key: service.name
+        value: simulation-api
+        action: upsert
+
+  batch:
+    timeout: 5s
+
+  attributes:
+    actions:
+      - key: trace_id
+        from_context: trace_id
+        action: insert
+
+      - key: span_id
+        from_context: span_id
+        action: insert
+
+exporters:
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+  prometheusremotewrite:
+    endpoint: http://mimir:9009/api/v1/push
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [resource, batch]
+      exporters: [otlp/tempo]
+
+    logs:
+      receivers: [otlp]
+      processors: [resource, attributes, batch]
+      exporters: [loki]
+
+    metrics:
+      receivers: [otlp]
+      processors: [resource, batch]
+      exporters: [prometheusremotewrite]
