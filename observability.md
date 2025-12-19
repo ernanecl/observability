@@ -509,3 +509,10 @@ O cliente:
 | Produção                    | Helm + GitOps                     |
 
 > ⚠️ Não vale a pena escrever YAML “puro” agora, porque você já sabe que vai migrar.
+
+
+
+Cliente:
+
+OTEL_SERVICE_NAME=simulation-api
+OTEL_RESOURCE_ATTRIBUTES=service.version=1.0.0

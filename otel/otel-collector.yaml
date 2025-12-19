@@ -7,9 +7,12 @@ receivers:
 processors:
   resource:
     attributes:
-      - key: service.name
-        value: simulation-api
-        action: upsert
+      - key: service.namespace
+        value: platform
+        action: insert
+      - key: deployment.environment
+        value: local
+        action: insert
 
   batch:
     timeout: 5s
