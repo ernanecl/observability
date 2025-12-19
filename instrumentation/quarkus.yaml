@@ -1,0 +1,59 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: java-quarkus
+  namespace: observability
+spec:
+  exporter:
+    endpoint: http://otel-collector.observability:4317
+
+  propagators:
+    - tracecontext
+    - baggage
+
+  sampler:
+    type: parentbased_traceidratio
+    argument: "1.0"
+
+  java:
+    image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:1.33.0
+    env:
+      - name: OTEL_TRACES_EXPORTER
+        value: otlp
+      - name: OTEL_METRICS_EXPORTER
+        value: otlp
+      - name: OTEL_LOGS_EXPORTER
+        value: otlp
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: grpc
+      - name: OTEL_INSTRUMENTATION_QUARKUS_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_HTTP_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_JDBC_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_REDISJEDIS_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_KAFKA_ENABLED
+        value: "false"
+      - name: OTEL_INSTRUMENTATION_REDISLETTUCE_ENABLED
+        value: "false"
+      - name: OTEL_INSTRUMENTATION_MONGODB_ENABLED
+        value: "false"
+      - name: OTEL_INSTRUMENTATION_RUNTIMEMETRICS_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_JDBC_CAPTURE_STATEMENTS
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_JDBC_CAPTURE_CONNECTION_ATTRIBUTES
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_QUARKUS_CAPTURE_EXPERIMENTAL_SPANS
+        value: "true"
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: service.namespace=platform,deployment.environment=local
+    volumeMounts:
+      - name: otel-auto-instrumentation
+        mountPath: /otel-auto-instrumentation 
